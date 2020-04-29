@@ -17,7 +17,7 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
 
-        <Button href="http://10.131.20.136:8080/auth">Authenticate</Button>
+        <Button href="http://10.128.23.46:8080/auth">Authenticate</Button>
       </header>
     </div>
   );
