@@ -27,6 +27,12 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+### `Deploying to Openshift`
+
+oc new-app nodeshift/ubi8-s2i-web-app:latest~https://github.com/Mint3kool/runrunrun --name=runrunrun
+
+See [Modern web applications with Openshift Chained builds](https://developers.redhat.com/blog/2018/10/23/modern-web-applications-on-openshift-part-2-using-chained-builds/) for more information
+
 ### `npm run eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can’t go back!**
