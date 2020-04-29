@@ -12,7 +12,8 @@
     "react-bootstrap": "^1.0.1",
     "react-bootstrap-buttons": "^1.0.0",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "js-yaml": "^3.13.1"
   },
   "scripts": {
     "start-dev": "react-scripts start",
