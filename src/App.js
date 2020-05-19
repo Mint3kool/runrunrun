@@ -17,7 +17,7 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
 
-        <Button href="http://runrunbackend-runrunrun.apps.us-east-2.starter.openshift-online.com/auth">
+        <Button href="http://runrunbackend:3001/auth">
           Authenticate
         </Button>
       </header>
