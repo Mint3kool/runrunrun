@@ -1,0 +1,301 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: runrunrun
+  annotations:
+    openshift.io/display-name: Strava Running Application
+    description: I don't know what this application does yet.
+    iconClass: icon-nodejs
+    tags: node
+objects:
+  - apiVersion: image.openshift.io/v1
+    kind: ImageStream
+    metadata:
+      annotations:
+      labels:
+        app: runrunbackend
+      name: runrunbackend
+    spec:
+      lookupPolicy:
+        local: false
+  - apiVersion: image.openshift.io/v1
+    kind: ImageStream
+    metadata:
+      annotations:
+      labels:
+        app: runrunrun
+      name: runrunrun
+    spec:
+      lookupPolicy:
+        local: false
+  - apiVersion: image.openshift.io/v1
+    kind: ImageStream
+    metadata:
+      annotations:
+      labels:
+        app: runrunrun
+      name: ubi8-s2i-web-app #node builder image
+    spec:
+      lookupPolicy:
+        local: false
+      tags:
+        - annotations:
+            openshift.io/imported-from: nodeshift/ubi8-s2i-web-app:latest
+          from:
+            kind: DockerImage
+            name: nodeshift/ubi8-s2i-web-app:latest
+          generation: 2
+          importPolicy: {}
+          name: latest
+          referencePolicy:
+            type: Source
+  - apiVersion: build.openshift.io/v1
+    kind: BuildConfig
+    metadata:
+      annotations:
+      labels:
+        app: runrunbackend
+      name: runrunbackend
+    spec:
+      failedBuildsHistoryLimit: 5
+      nodeSelector: null
+      output:
+        to:
+          kind: ImageStreamTag
+          name: runrunbackend:latest
+      postCommit: {}
+      resources:
+        limits:
+          memory: 1Gi
+      runPolicy: Serial
+      source:
+        git:
+          uri: ${APP_GIT_BACKEND_URL}
+        type: Git
+      strategy:
+        sourceStrategy:
+          from:
+            kind: ImageStreamTag
+            name: nodejs:10
+            namespace: openshift
+        type: Source
+      successfulBuildsHistoryLimit: 5
+      triggers:
+        - github:
+            secret: SB5AR5F1aC-fTRXhWAuD
+          type: GitHub
+        - generic:
+            secret: BKJA2u6Plv8RdJXuSEc7
+          type: Generic
+        - type: ConfigChange
+        - imageChange:
+          type: ImageChange
+  - apiVersion: build.openshift.io/v1
+    kind: BuildConfig
+    metadata:
+      annotations:
+      labels:
+        app: runrunrun
+      name: runrunrun
+    spec:
+      failedBuildsHistoryLimit: 5
+      nodeSelector: null
+      output:
+        to:
+          kind: ImageStreamTag
+          name: runrunrun:latest
+      postCommit: {}
+      resources:
+        limits:
+          memory: 1Gi
+      runPolicy: Serial
+      source:
+        git:
+          uri: ${APP_GIT_FRONTEND_URL}
+        type: Git
+      strategy:
+        sourceStrategy:
+          from:
+            kind: ImageStreamTag
+            name: ubi8-s2i-web-app:latest
+        type: Source
+      successfulBuildsHistoryLimit: 5
+      triggers:
+        - github:
+            secret: bbk_jX6L__6zoMtKA_Gs
+          type: GitHub
+        - generic:
+            secret: GPKu5Ffeuw0EX42zj6Ku
+          type: Generic
+        - type: ConfigChange
+        - imageChange:
+          type: ImageChange
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      annotations:
+      labels:
+        app: runrunbackend
+      name: runrunbackend
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        app: runrunbackend
+        deploymentconfig: runrunbackend
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+      template:
+        metadata:
+          annotations:
+          labels:
+            app: runrunbackend
+            deploymentconfig: runrunbackend
+        spec:
+          containers:
+            - imagePullPolicy: Always
+              name: runrunbackend
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+      test: false
+      triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - runrunbackend
+            from:
+              kind: ImageStreamTag
+              name: runrunbackend:latest
+          type: ImageChange
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      annotations:
+      labels:
+        app: runrunrun
+      name: runrunrun
+    spec:
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        app: runrunrun
+        deploymentconfig: runrunrun
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+      template:
+        metadata:
+          annotations:
+          labels:
+            app: runrunrun
+            deploymentconfig: runrunrun
+        spec:
+          containers:
+            - imagePullPolicy: Always
+              name: runrunrun
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+      test: false
+      triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - runrunrun
+            from:
+              kind: ImageStreamTag
+              name: runrunrun:latest
+          type: ImageChange
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: runrunbackend
+      name: runrunbackend
+    spec:
+      ports:
+        - name: 3001-8080
+          port: 3001
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app: runrunbackend
+      sessionAffinity: None
+      type: ClusterIP
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: runrunrun
+      name: runrunrun
+    spec:
+      ports:
+        - name: 3000-8080
+          port: 3000
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app: runrunrun
+      sessionAffinity: None
+      type: ClusterIP
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      annotations:
+      labels:
+        app: runrunrun
+      name: runrunrun
+      namespace: runrunrun
+    spec:
+      port:
+        targetPort: 3000-8080
+      to:
+        kind: Service
+        name: runrunrun
+        weight: 100
+      wildcardPolicy: None
+parameters:
+  - name: APP_GIT_FRONTEND_URL
+    displayName: Application Source Git URL
+    description: The Git URL of the application source code
+    required: true
+    value: https://github.com/Mint3kool/runrunrun
+  - name: APP_GIT_BACKEND_URL
+    displayName: Application Source Git URL
+    description: The Git URL of the application source code
+    required: true
+    value: https://github.com/Mint3kool/runrunrun #atm front and back end are in one application
